@@ -2,121 +2,149 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Flipbook</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Flipbook RTL</title>
+
+  <!-- لازم يكونوا بنفس المجلد -->
+  <script src="jquery.min.js"></script>
+  <script src="turn.min.js"></script>
 
   <style>
+    :root{
+      --pageSize: 600px; /* حجم الصفحة المربعة */
+    }
+
     body{
       margin:0;
+      min-height:100vh;
+      display:flex;
+      justify-content:center;
+      align-items:center;
       background:#f2f2f2;
       font-family: Arial, sans-serif;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      min-height:100vh;
-      gap:12px;
     }
 
-    /* كتاب مفتوح */
-    #book-wrap{
-      width:min(1200px, 95vw);
-      aspect-ratio: 2 / 1;
-      background:transparent;
+    /* الكتاب: صفحتين جنب بعض = 1200×600 */
+    #stage{
+      width: calc(var(--pageSize) * 2);
+      height: var(--pageSize);
+      position: relative;
     }
 
-    #book{ width:100%; height:100%; }
+    /* Turn.js container */
+    #book{
+      width: 100%;
+      height: 100%;
+    }
 
-    .hint{ color:#333; font-size:14px; }
-    .btns{ display:flex; gap:8px; }
-    button{
-      padding:10px 14px;
-      border:0;
-      border-radius:10px;
-      cursor:pointer;
-      box-shadow:0 6px 18px rgba(0,0,0,.12);
+    /* صفحة واحدة */
+    .page{
+      width: var(--pageSize);
+      height: var(--pageSize);
+      background:#fff;
+      overflow:hidden;
+    }
+
+    /* الصور داخل الصفحات */
+    .page img{
+      width:100%;
+      height:100%;
+      object-fit: contain; /* لا قص */
+      display:block;
+      background:#fff;
+
+      /* هذا يلغي انعكاس الصور الناتج عن قلب الكتاب */
+      transform: scaleX(-1);
+      transform-origin: center;
+    }
+
+    /* نقلب "الكتاب" ككل حتى يكون RTL (القلب من اليمين) */
+    #mirror{
+      width:100%;
+      height:100%;
+      transform: scaleX(-1);
+      transform-origin: center;
+    }
+
+    /* ملاحظة بسيطة */
+    .hint{
+      position: fixed;
+      bottom: 14px;
+      left: 14px;
+      right: 14px;
+      text-align:center;
+      color:#444;
+      font-size:14px;
+      opacity:.9;
+      user-select:none;
+      pointer-events:none;
     }
   </style>
 </head>
 
 <body>
-  <div id="book-wrap">
-    <div id="book"></div>
+  <div id="stage">
+    <div id="mirror">
+      <div id="book">
+
+        <!-- صفحة 1 = غلاف -->
+        <div class="page"><img src="page01.jpg" alt="page01"></div>
+
+        <!-- من صفحة 2 إلى 25 -->
+        <div class="page"><img src="page02.jpg" alt="page02"></div>
+        <div class="page"><img src="page03.jpg" alt="page03"></div>
+        <div class="page"><img src="page04.jpg" alt="page04"></div>
+        <div class="page"><img src="page05.jpg" alt="page05"></div>
+        <div class="page"><img src="page06.jpg" alt="page06"></div>
+        <div class="page"><img src="page07.jpg" alt="page07"></div>
+        <div class="page"><img src="page08.jpg" alt="page08"></div>
+        <div class="page"><img src="page09.jpg" alt="page09"></div>
+        <div class="page"><img src="page10.jpg" alt="page10"></div>
+        <div class="page"><img src="page11.jpg" alt="page11"></div>
+        <div class="page"><img src="page12.jpg" alt="page12"></div>
+        <div class="page"><img src="page13.jpg" alt="page13"></div>
+        <div class="page"><img src="page14.jpg" alt="page14"></div>
+        <div class="page"><img src="page15.jpg" alt="page15"></div>
+        <div class="page"><img src="page16.jpg" alt="page16"></div>
+        <div class="page"><img src="page17.jpg" alt="page17"></div>
+        <div class="page"><img src="page18.jpg" alt="page18"></div>
+        <div class="page"><img src="page19.jpg" alt="page19"></div>
+        <div class="page"><img src="page20.jpg" alt="page20"></div>
+        <div class="page"><img src="page21.jpg" alt="page21"></div>
+        <div class="page"><img src="page22.jpg" alt="page22"></div>
+        <div class="page"><img src="page23.jpg" alt="page23"></div>
+        <div class="page"><img src="page24.jpg" alt="page24"></div>
+        <div class="page"><img src="page25.jpg" alt="page25"></div>
+
+      </div>
+    </div>
   </div>
 
-  <div class="btns">
-    <button id="prev">السابق</button>
-    <button id="next">التالي</button>
-  </div>
-  <div class="hint">اضغطي على صفحة الصورة (يسار) لتقليب باتجاه اليمين، وعلى صفحة الكتابة (يمين) للتقليب للصفحتين التاليتين.</div>
-
-  <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.min.js"></script>
+  <div class="hint">לשינוי עמוד: גרירה/לחיצה בקצה הימני של הדף (RTL)</div>
 
   <script>
-    const TOTAL_PAGES = 25;
+    // تهيئة Turn.js
+    $(function(){
+      $('#book').turn({
+        width: 1200,
+        height: 600,
+        autoCenter: true,
+        display: 'double',   // صفحتين جنب بعض
+        acceleration: true,
+        gradients: true,
+        elevation: 50
+      });
 
-    // ✅ ترتيب الصفحات: الغلاف 01
-    // بعده نريد: (يمين كتابة = 02) + (يسار صورة = 03)
-    // ثم (يمين كتابة = 04) + (يسار صورة = 05) ... إلخ
-    //
-    // ملاحظة: PageFlip يأخذ مصفوفة صفحات بالترتيب الطبيعي.
-    // نحن سنرتبها بحيث تكون الزوجية (كتابة) ثم الفردية (صورة) بعد الغلاف.
+      // الصفحة الأولى (الغلاف) تظهر لوحدها تلقائيًا عادة،
+      // لكن لو ظهرت صفحتين بالبداية، هذا يجبرها على صفحة 1:
+      $('#book').turn('page', 1);
 
-    const pages = [];
-    pages.push(`pages/page01.jpg`); // الغلاف
-
-    for (let i = 2; i <= TOTAL_PAGES; i += 2) {
-      const right = String(i).padStart(2,'0');     // كتابة (يمين)
-      const left  = String(i+1).padStart(2,'0');   // صورة (يسار)
-      pages.push(`pages/page${right}.jpg`);
-      if (i + 1 <= TOTAL_PAGES) pages.push(`pages/page${left}.jpg`);
-    }
-
-    const bookEl = document.getElementById('book');
-
-    const pageFlip = new St.PageFlip(bookEl, {
-      width: 600,
-      height: 600,
-      size: "stretch",
-      minWidth: 315,
-      maxWidth: 1200,
-      minHeight: 315,
-      maxHeight: 1200,
-      showCover: true,
-      mobileScrollSupport: true,
-      useMouseEvents: true,
-      swipeDistance: 30,
-      flippingTime: 700,
-      disableFlipByClick: true, // ✅ مهم: سنستبدل “نقرة التقليب” بتحكمنا نحن
-      maxShadowOpacity: 0.35
+      // دعم الأسهم
+      $(document).on('keydown', function(e){
+        if(e.key === "ArrowLeft") $('#book').turn('next');
+        if(e.key === "ArrowRight") $('#book').turn('previous');
+      });
     });
-
-    pageFlip.loadFromImages(pages);
-
-    // أزرار
-    document.getElementById('next').addEventListener('click', () => pageFlip.flipNext());
-    document.getElementById('prev').addEventListener('click', () => pageFlip.flipPrev());
-
-    // ✅ منطق النقر:
-    // - إذا ضغطتي على الصفحة اليسار => flipPrev (يفتح باتجاه اليمين)
-    // - إذا ضغطتي على الصفحة اليمين => flipNext (للصفحتين التاليين)
-    //
-    // نحدد يسار/يمين حسب موقع النقرة داخل الكتاب.
-
-    function handleClick(ev){
-      const rect = bookEl.getBoundingClientRect();
-      const x = ev.clientX - rect.left; // من 0 إلى عرض الكتاب
-      const isLeftHalf = x < rect.width / 2;
-
-      if (isLeftHalf) {
-        pageFlip.flipPrev();  // ✅ الصورة (يسار) تفتح يمين
-      } else {
-        pageFlip.flipNext();  // ✅ الكتابة (يمين) تفتح يسار
-      }
-    }
-
-    // نربط النقر على الكتاب كله
-    bookEl.addEventListener('click', handleClick);
   </script>
 </body>
 </html>
