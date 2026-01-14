@@ -17,15 +17,31 @@
       min-height:100vh;
       gap:12px;
     }
+
+    /* الحاوية */
     #book-wrap{
       width:min(1200px, 95vw);
-      aspect-ratio: 2 / 1; /* كتاب مفتوح: صفحتين جنب بعض */
+      aspect-ratio: 2 / 1; /* كتاب مفتوح */
       background:transparent;
+
+      /* ✅ هذا يعكس اتجاه التقليب (يصير LTR) */
+      transform: scaleX(-1);
     }
+
+    /* الكتاب */
     #book{
       width:100%;
       height:100%;
     }
+
+    /* ✅ نرجّع المحتوى لطبيعته (حتى الصور/النص ما ينقلب) */
+    #book .stf__item,
+    #book .stf__page,
+    #book .stf__block,
+    #book img{
+      transform: scaleX(-1);
+    }
+
     .hint{
       color:#333;
       font-size:14px;
@@ -55,14 +71,12 @@
   </div>
   <div class="hint">يمكنك أيضًا التقليب بالسحب/النقر على أطراف الصفحة.</div>
 
-  <!-- مكتبة تقليب صفحات (واقعية) عبر CDN -->
+  <!-- مكتبة التقليب -->
   <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.min.js"></script>
 
   <script>
-    // عدلي الرقم إذا PDF عندك أكثر/أقل من 25
     const TOTAL_PAGES = 25;
 
-    // أنشئ قائمة صور الصفحات
     const pages = [];
     for (let i = 1; i <= TOTAL_PAGES; i++){
       const n = String(i).padStart(2,'0');
@@ -71,16 +85,15 @@
 
     const bookEl = document.getElementById('book');
 
-    // إعدادات “واقعية”
     const pageFlip = new St.PageFlip(bookEl, {
-      width: 600,          // مقاس الصفحة الواحدة (داخل العرض)
+      width: 600,
       height: 600,
-      size: "stretch",     // يمدد حسب مساحة الحاوية
+      size: "stretch",
       minWidth: 315,
       maxWidth: 1200,
       minHeight: 315,
       maxHeight: 1200,
-      showCover: true,     // مهم: الغلاف لوحده
+      showCover: true,
       mobileScrollSupport: true,
       useMouseEvents: true,
       swipeDistance: 30,
@@ -89,15 +102,10 @@
       maxShadowOpacity: 0.35
     });
 
-    // تحميل الصفحات كصور
     pageFlip.loadFromImages(pages);
 
-    // أزرار التالي/السابق (اختياري لكن مفيد)
     document.getElementById('next').addEventListener('click', () => pageFlip.flipNext());
     document.getElementById('prev').addEventListener('click', () => pageFlip.flipPrev());
-
-    // اتجاه RTL: عمليًا “التجربة” هي الأهم لأن بعض المكتبات تتعامل مع الاتجاه عبر CSS.
-    // إذا حسّيتي الاتجاه معكوس، قولي لي وسأعطيك نسخة RTL معكوسة (سطر واحد).
   </script>
 </body>
 </html>
