@@ -1,33 +1,42 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Flipbook RTL</title>
 
-  <!-- CDN لتفادي مشاكل الملفات -->
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/turn.js/4/turn.min.js"></script>
-
   <style>
+    :root{ --pageSize: 600px; }
+
     body{
       margin:0;
-      height:100vh;
+      min-height:100vh;
       display:flex;
       justify-content:center;
       align-items:center;
-      background:#eee;
+      background:#f2f2f2;
       font-family: Arial, sans-serif;
     }
 
-    #book{
-      width:600px;
-      height:600px;
+    #stage{
+      width: calc(var(--pageSize) * 2);
+      height: var(--pageSize);
+      position: relative;
+      overflow:hidden;
     }
 
+    #mirror{
+      width:100%;
+      height:100%;
+      transform: scaleX(-1); /* يعكس الكتاب ليبدأ من اليمين */
+      transform-origin:center;
+    }
+
+    #book{ width:100%; height:100%; }
+
     .page{
-      width:600px;
-      height:600px;
+      width: var(--pageSize);
+      height: var(--pageSize);
       background:#fff;
       overflow:hidden;
     }
@@ -35,79 +44,111 @@
     .page img{
       width:100%;
       height:100%;
-      object-fit:contain;
+      object-fit: contain;
       display:block;
       background:#fff;
+
+      /* يلغي انعكاس الصورة حتى تبقى طبيعية */
+      transform: scaleX(-1);
+      transform-origin:center;
     }
 
-    /* صفحة فارغة (للتوازن) */
-    .blank{
-      background:#fff;
+    #errorBox{
+      position: fixed;
+      bottom: 12px;
+      left: 12px;
+      right: 12px;
+      background: #fff3cd;
+      border: 1px solid #ffeeba;
+      color: #664d03;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 14px;
+      display:none;
+      direction: rtl;
     }
   </style>
 </head>
 
 <body>
+  <div id="stage">
+    <div id="mirror">
+      <div id="book"></div>
+    </div>
+  </div>
 
-<div id="book">
-  <!-- صفحة وهمية فارغة: تجعل الغلاف (page01) ينزل على اليمين -->
-  <div class="page blank"></div>
+  <div id="errorBox"></div>
 
-  <!-- الغلاف (سيظهر يمين) -->
-  <div class="page"><img src="page01.jpg" alt="Cover"></div>
+  <script>
+    // ذكي: يجرّب المسار في root ثم pages/
+    const CANDIDATES = [
+      { base: "", jq: "jquery.min.js", turn: "turn.min.js", imgBase: "" },
+      { base: "pages/", jq: "pages/jquery.min.js", turn: "pages/turn.min.js", imgBase: "pages/" }
+    ];
 
-  <!-- بقية الصفحات -->
-  <div class="page"><img src="page02.jpg" alt="2"></div>
-  <div class="page"><img src="page03.jpg" alt="3"></div>
-  <div class="page"><img src="page04.jpg" alt="4"></div>
-  <div class="page"><img src="page05.jpg" alt="5"></div>
-  <div class="page"><img src="page06.jpg" alt="6"></div>
-  <div class="page"><img src="page07.jpg" alt="7"></div>
-  <div class="page"><img src="page08.jpg" alt="8"></div>
-  <div class="page"><img src="page09.jpg" alt="9"></div>
-  <div class="page"><img src="page10.jpg" alt="10"></div>
-  <div class="page"><img src="page11.jpg" alt="11"></div>
-  <div class="page"><img src="page12.jpg" alt="12"></div>
-  <div class="page"><img src="page13.jpg" alt="13"></div>
-  <div class="page"><img src="page14.jpg" alt="14"></div>
-  <div class="page"><img src="page15.jpg" alt="15"></div>
-  <div class="page"><img src="page16.jpg" alt="16"></div>
-  <div class="page"><img src="page17.jpg" alt="17"></div>
-  <div class="page"><img src="page18.jpg" alt="18"></div>
-  <div class="page"><img src="page19.jpg" alt="19"></div>
-  <div class="page"><img src="page20.jpg" alt="20"></div>
-  <div class="page"><img src="page21.jpg" alt="21"></div>
-  <div class="page"><img src="page22.jpg" alt="22"></div>
-  <div class="page"><img src="page23.jpg" alt="23"></div>
-  <div class="page"><img src="page24.jpg" alt="24"></div>
-  <div class="page"><img src="page25.jpg" alt="25"></div>
-</div>
+    function showError(msg){
+      const box = document.getElementById('errorBox');
+      box.style.display = 'block';
+      box.textContent = msg;
+    }
 
-<script>
-  $(function () {
-    var $book = $("#book");
+    function loadScript(src){
+      return new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = src;
+        s.onload = resolve;
+        s.onerror = () => reject(new Error("Failed: " + src));
+        document.head.appendChild(s);
+      });
+    }
 
-    $book.turn({
-      width: 600,
-      height: 600,
-      autoCenter: true,
-      display: "double",    // صفحتين معًا (بعد الغلاف)
-      direction: "rtl",     // RTL
-      gradients: true
-    });
+    function addPages(imgBase){
+      const book = document.getElementById('book');
+      book.innerHTML = "";
 
-    // نبدأ على الغلاف (الصفحة 2 لأن الصفحة 1 وهمية)
-    $book.turn("page", 2);
+      // 25 صفحة: page01.jpg..page25.jpg
+      for(let i=1; i<=25; i++){
+        const num = String(i).padStart(2,'0');
+        const div = document.createElement('div');
+        div.className = "page";
+        const img = document.createElement('img');
+        img.src = `${imgBase}page${num}.jpg`;
+        img.alt = `page${num}`;
+        div.appendChild(img);
+        book.appendChild(div);
+      }
+    }
 
-    // أحيانًا الكاش/التخطيط يلخبط: نثبتها بعد لحظة
-    setTimeout(function(){
-      try {
-        $book.turn("direction", "rtl");
-        $book.turn("page", 2);
-      } catch(e){}
-    }, 300);
-  });
-</script>
+    async function init(){
+      for(const c of CANDIDATES){
+        try{
+          await loadScript(c.jq);
+          await loadScript(c.turn);
 
+          addPages(c.imgBase);
+
+          if(!window.jQuery || !jQuery.fn.turn){
+            throw new Error("Turn.js not available");
+          }
+
+          jQuery('#book').turn({
+            width: 1200,
+            height: 600,
+            autoCenter: true,
+            display: 'double'
+          });
+
+          jQuery('#book').turn('page', 1);
+          return; // نجاح
+        }catch(e){
+          // جرّبي المرشح التالي
+        }
+      }
+
+      showError("المشكلة: ملفات jquery.min.js أو turn.min.js غير موجودة في المسار الصحيح (root أو pages). افتحي رابط …/turn.min.js وتحققي أنه لا يعطي 404.");
+    }
+
+    init();
+  </script>
 </body>
 </html>
