@@ -38,7 +38,10 @@
       object-fit:contain;
       display:block;
       background:#fff;
-      /* مهم: لا يوجد أي قلب للصورة */
+
+      /* ✅ انعكاس الصورة (وبالتالي النص داخلها) */
+      transform: scaleX(-1);
+      transform-origin: center;
     }
 
     /* صفحة فارغة (للتوازن) */
@@ -100,7 +103,6 @@
     // نبدأ على الغلاف (الصفحة 2 لأن الصفحة 1 وهمية)
     $book.turn("page", 2);
 
-    // تثبيت بعد لحظة
     setTimeout(function(){
       try {
         $book.turn("direction", "rtl");
