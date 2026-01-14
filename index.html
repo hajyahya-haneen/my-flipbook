@@ -1,122 +1,113 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Flipbook RTL</title>
 
-  <!-- لازم يكونوا موجودين بنفس المجلد -->
-  <script src="jquery.min.js"></script>
-  <script src="turn.min.js"></script>
+  <!-- CDN لتفادي مشاكل الملفات -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/turn.js/4/turn.min.js"></script>
 
   <style>
-    /* صفحة كاملة في المنتصف */
     body{
       margin:0;
-      min-height:100vh;
+      height:100vh;
       display:flex;
-      align-items:center;
       justify-content:center;
-      background:#f2f2f2;
+      align-items:center;
+      background:#eee;
       font-family: Arial, sans-serif;
     }
 
-    /* حجم الكتاب النهائي = 600x600 (مربع) */
     #book{
       width:600px;
       height:600px;
     }
 
-    /* كل صفحة بنفس حجم الكتاب */
     .page{
       width:600px;
       height:600px;
       background:#fff;
       overflow:hidden;
-      position:relative;
     }
 
     .page img{
       width:100%;
       height:100%;
-      object-fit:contain; /* لو بدك قصّ بدل احتواء: غيّريها cover */
+      object-fit:contain;
       display:block;
       background:#fff;
     }
 
-    /* تحسين بسيط للموبايل: يصغر تلقائيًا */
-    @media (max-width: 650px){
-      #book, .page{
-        width: 92vw;
-        height: 92vw;
-      }
+    /* صفحة فارغة (للتوازن) */
+    .blank{
+      background:#fff;
     }
   </style>
 </head>
 
 <body>
 
-  <div id="book"></div>
+<div id="book">
+  <!-- صفحة وهمية فارغة: تجعل الغلاف (page01) ينزل على اليمين -->
+  <div class="page blank"></div>
 
-  <script>
-    // =========================
-    // إعداداتك
-    // =========================
-    const TOTAL_PAGES = 25;
+  <!-- الغلاف (سيظهر يمين) -->
+  <div class="page"><img src="page01.jpg" alt="Cover"></div>
 
-    // إذا صورك داخل مجلد pages فقط، خليها: "pages/"
-    // وإذا صورك بجانب index.html (الروت) خليها: ""
-    const IMG_PATH = "";
+  <!-- بقية الصفحات -->
+  <div class="page"><img src="page02.jpg" alt="2"></div>
+  <div class="page"><img src="page03.jpg" alt="3"></div>
+  <div class="page"><img src="page04.jpg" alt="4"></div>
+  <div class="page"><img src="page05.jpg" alt="5"></div>
+  <div class="page"><img src="page06.jpg" alt="6"></div>
+  <div class="page"><img src="page07.jpg" alt="7"></div>
+  <div class="page"><img src="page08.jpg" alt="8"></div>
+  <div class="page"><img src="page09.jpg" alt="9"></div>
+  <div class="page"><img src="page10.jpg" alt="10"></div>
+  <div class="page"><img src="page11.jpg" alt="11"></div>
+  <div class="page"><img src="page12.jpg" alt="12"></div>
+  <div class="page"><img src="page13.jpg" alt="13"></div>
+  <div class="page"><img src="page14.jpg" alt="14"></div>
+  <div class="page"><img src="page15.jpg" alt="15"></div>
+  <div class="page"><img src="page16.jpg" alt="16"></div>
+  <div class="page"><img src="page17.jpg" alt="17"></div>
+  <div class="page"><img src="page18.jpg" alt="18"></div>
+  <div class="page"><img src="page19.jpg" alt="19"></div>
+  <div class="page"><img src="page20.jpg" alt="20"></div>
+  <div class="page"><img src="page21.jpg" alt="21"></div>
+  <div class="page"><img src="page22.jpg" alt="22"></div>
+  <div class="page"><img src="page23.jpg" alt="23"></div>
+  <div class="page"><img src="page24.jpg" alt="24"></div>
+  <div class="page"><img src="page25.jpg" alt="25"></div>
+</div>
 
-    // حجم المربع (لا تغيّريه إذا بدك 600x600)
-    const BOOK_SIZE = 600;
+<script>
+  $(function () {
+    var $book = $("#book");
 
-    // =========================
-    // إنشاء الصفحات داخل #book
-    // =========================
-    function pad2(n){ return String(n).padStart(2,'0'); }
-
-    const bookEl = document.getElementById("book");
-
-    for(let i=1; i<=TOTAL_PAGES; i++){
-      const page = document.createElement("div");
-      page.className = "page";
-
-      const img = document.createElement("img");
-      img.alt = "Page " + i;
-      img.src = IMG_PATH + "page" + pad2(i) + ".jpg";
-
-      page.appendChild(img);
-      bookEl.appendChild(page);
-    }
-
-    // =========================
-    // تشغيل Turn.js
-    // =========================
-    $(function(){
-      // ملاحظة:
-      // display:'double' = صفحتين مقابل بعض
-      // لكن الغلاف (page01) سيظهر لوحده تلقائيًا كصفحة أولى.
-      $("#book").turn({
-        width: BOOK_SIZE,
-        height: BOOK_SIZE,
-        autoCenter: true,
-        display: "double",
-        direction: "rtl",
-        gradients: true,
-        elevation: 50,
-        when: {
-          turning: function(e, page){
-            // تأكيد أن البداية من اليمين: أول فتح يكون على الغلاف
-            // لا شيء إضافي هنا، فقط جاهز للتوسعة لو حبيتي.
-          }
-        }
-      });
-
-      // لو فتح أول مرة مش على الغلاف بسبب الكاش/التحديث:
-      $("#book").turn("page", 1);
+    $book.turn({
+      width: 600,
+      height: 600,
+      autoCenter: true,
+      display: "double",    // صفحتين معًا (بعد الغلاف)
+      direction: "rtl",     // RTL
+      gradients: true
     });
-  </script>
+
+    // نبدأ على الغلاف (الصفحة 2 لأن الصفحة 1 وهمية)
+    $book.turn("page", 2);
+
+    // أحيانًا الكاش/التخطيط يلخبط: نثبتها بعد لحظة
+    setTimeout(function(){
+      try {
+        $book.turn("direction", "rtl");
+        $book.turn("page", 2);
+      } catch(e){}
+    }, 300);
+  });
+</script>
 
 </body>
 </html>
