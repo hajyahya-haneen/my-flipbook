@@ -18,38 +18,17 @@
       gap:12px;
     }
 
-    /* الحاوية */
+    /* كتاب مفتوح */
     #book-wrap{
       width:min(1200px, 95vw);
-      aspect-ratio: 2 / 1; /* كتاب مفتوح */
+      aspect-ratio: 2 / 1;
       background:transparent;
-
-      /* ✅ هذا يعكس اتجاه التقليب (يصير LTR) */
-      transform: scaleX(-1);
     }
 
-    /* الكتاب */
-    #book{
-      width:100%;
-      height:100%;
-    }
+    #book{ width:100%; height:100%; }
 
-    /* ✅ نرجّع المحتوى لطبيعته (حتى الصور/النص ما ينقلب) */
-    #book .stf__item,
-    #book .stf__page,
-    #book .stf__block,
-    #book img{
-      transform: scaleX(-1);
-    }
-
-    .hint{
-      color:#333;
-      font-size:14px;
-    }
-    .btns{
-      display:flex;
-      gap:8px;
-    }
+    .hint{ color:#333; font-size:14px; }
+    .btns{ display:flex; gap:8px; }
     button{
       padding:10px 14px;
       border:0;
@@ -69,18 +48,28 @@
     <button id="prev">السابق</button>
     <button id="next">التالي</button>
   </div>
-  <div class="hint">يمكنك أيضًا التقليب بالسحب/النقر على أطراف الصفحة.</div>
+  <div class="hint">اضغطي على صفحة الصورة (يسار) لتقليب باتجاه اليمين، وعلى صفحة الكتابة (يمين) للتقليب للصفحتين التاليتين.</div>
 
-  <!-- مكتبة التقليب -->
   <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.min.js"></script>
 
   <script>
     const TOTAL_PAGES = 25;
 
+    // ✅ ترتيب الصفحات: الغلاف 01
+    // بعده نريد: (يمين كتابة = 02) + (يسار صورة = 03)
+    // ثم (يمين كتابة = 04) + (يسار صورة = 05) ... إلخ
+    //
+    // ملاحظة: PageFlip يأخذ مصفوفة صفحات بالترتيب الطبيعي.
+    // نحن سنرتبها بحيث تكون الزوجية (كتابة) ثم الفردية (صورة) بعد الغلاف.
+
     const pages = [];
-    for (let i = 1; i <= TOTAL_PAGES; i++){
-      const n = String(i).padStart(2,'0');
-      pages.push(`pages/page${n}.jpg`);
+    pages.push(`pages/page01.jpg`); // الغلاف
+
+    for (let i = 2; i <= TOTAL_PAGES; i += 2) {
+      const right = String(i).padStart(2,'0');     // كتابة (يمين)
+      const left  = String(i+1).padStart(2,'0');   // صورة (يسار)
+      pages.push(`pages/page${right}.jpg`);
+      if (i + 1 <= TOTAL_PAGES) pages.push(`pages/page${left}.jpg`);
     }
 
     const bookEl = document.getElementById('book');
@@ -98,14 +87,36 @@
       useMouseEvents: true,
       swipeDistance: 30,
       flippingTime: 700,
-      disableFlipByClick: false,
+      disableFlipByClick: true, // ✅ مهم: سنستبدل “نقرة التقليب” بتحكمنا نحن
       maxShadowOpacity: 0.35
     });
 
     pageFlip.loadFromImages(pages);
 
+    // أزرار
     document.getElementById('next').addEventListener('click', () => pageFlip.flipNext());
     document.getElementById('prev').addEventListener('click', () => pageFlip.flipPrev());
+
+    // ✅ منطق النقر:
+    // - إذا ضغطتي على الصفحة اليسار => flipPrev (يفتح باتجاه اليمين)
+    // - إذا ضغطتي على الصفحة اليمين => flipNext (للصفحتين التاليين)
+    //
+    // نحدد يسار/يمين حسب موقع النقرة داخل الكتاب.
+
+    function handleClick(ev){
+      const rect = bookEl.getBoundingClientRect();
+      const x = ev.clientX - rect.left; // من 0 إلى عرض الكتاب
+      const isLeftHalf = x < rect.width / 2;
+
+      if (isLeftHalf) {
+        pageFlip.flipPrev();  // ✅ الصورة (يسار) تفتح يمين
+      } else {
+        pageFlip.flipNext();  // ✅ الكتابة (يمين) تفتح يسار
+      }
+    }
+
+    // نربط النقر على الكتاب كله
+    bookEl.addEventListener('click', handleClick);
   </script>
 </body>
 </html>
