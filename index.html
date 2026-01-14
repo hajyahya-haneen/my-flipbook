@@ -1,103 +1,113 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Flipbook</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Flipbook RTL</title>
+
+  <!-- CDN لتفادي مشاكل الملفات -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/turn.js/4/turn.min.js"></script>
 
   <style>
     body{
       margin:0;
-      background:#f2f2f2;
-      font-family: Arial, sans-serif;
+      height:100vh;
       display:flex;
-      flex-direction:column;
-      align-items:center;
       justify-content:center;
-      min-height:100vh;
-      gap:12px;
+      align-items:center;
+      background:#eee;
+      font-family: Arial, sans-serif;
     }
-    #book-wrap{
-      width:min(1200px, 95vw);
-      aspect-ratio: 2 / 1; /* كتاب مفتوح: صفحتين جنب بعض */
-      background:transparent;
-    }
+
     #book{
+      width:600px;
+      height:600px;
+    }
+
+    .page{
+      width:600px;
+      height:600px;
+      background:#fff;
+      overflow:hidden;
+    }
+
+    .page img{
       width:100%;
       height:100%;
+      object-fit:contain;
+      display:block;
+      background:#fff;
     }
-    .hint{
-      color:#333;
-      font-size:14px;
-    }
-    .btns{
-      display:flex;
-      gap:8px;
-    }
-    button{
-      padding:10px 14px;
-      border:0;
-      border-radius:10px;
-      cursor:pointer;
-      box-shadow:0 6px 18px rgba(0,0,0,.12);
+
+    /* صفحة فارغة (للتوازن) */
+    .blank{
+      background:#fff;
     }
   </style>
 </head>
 
 <body>
-  <div id="book-wrap">
-    <div id="book"></div>
-  </div>
 
-  <div class="btns">
-    <button id="prev">السابق</button>
-    <button id="next">التالي</button>
-  </div>
-  <div class="hint">يمكنك أيضًا التقليب بالسحب/النقر على أطراف الصفحة.</div>
+<div id="book">
+  <!-- صفحة وهمية فارغة: تجعل الغلاف (page01) ينزل على اليمين -->
+  <div class="page blank"></div>
 
-  <!-- مكتبة تقليب صفحات (واقعية) عبر CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.min.js"></script>
+  <!-- الغلاف (سيظهر يمين) -->
+  <div class="page"><img src="page01.jpg" alt="Cover"></div>
 
-  <script>
-    // عدلي الرقم إذا PDF عندك أكثر/أقل من 25
-    const TOTAL_PAGES = 25;
+  <!-- بقية الصفحات -->
+  <div class="page"><img src="page02.jpg" alt="2"></div>
+  <div class="page"><img src="page03.jpg" alt="3"></div>
+  <div class="page"><img src="page04.jpg" alt="4"></div>
+  <div class="page"><img src="page05.jpg" alt="5"></div>
+  <div class="page"><img src="page06.jpg" alt="6"></div>
+  <div class="page"><img src="page07.jpg" alt="7"></div>
+  <div class="page"><img src="page08.jpg" alt="8"></div>
+  <div class="page"><img src="page09.jpg" alt="9"></div>
+  <div class="page"><img src="page10.jpg" alt="10"></div>
+  <div class="page"><img src="page11.jpg" alt="11"></div>
+  <div class="page"><img src="page12.jpg" alt="12"></div>
+  <div class="page"><img src="page13.jpg" alt="13"></div>
+  <div class="page"><img src="page14.jpg" alt="14"></div>
+  <div class="page"><img src="page15.jpg" alt="15"></div>
+  <div class="page"><img src="page16.jpg" alt="16"></div>
+  <div class="page"><img src="page17.jpg" alt="17"></div>
+  <div class="page"><img src="page18.jpg" alt="18"></div>
+  <div class="page"><img src="page19.jpg" alt="19"></div>
+  <div class="page"><img src="page20.jpg" alt="20"></div>
+  <div class="page"><img src="page21.jpg" alt="21"></div>
+  <div class="page"><img src="page22.jpg" alt="22"></div>
+  <div class="page"><img src="page23.jpg" alt="23"></div>
+  <div class="page"><img src="page24.jpg" alt="24"></div>
+  <div class="page"><img src="page25.jpg" alt="25"></div>
+</div>
 
-    // أنشئ قائمة صور الصفحات
-    const pages = [];
-    for (let i = 1; i <= TOTAL_PAGES; i++){
-      const n = String(i).padStart(2,'0');
-      pages.push(`pages/page${n}.jpg`);
-    }
+<script>
+  $(function () {
+    var $book = $("#book");
 
-    const bookEl = document.getElementById('book');
-
-    // إعدادات “واقعية”
-    const pageFlip = new St.PageFlip(bookEl, {
-      width: 600,          // مقاس الصفحة الواحدة (داخل العرض)
+    $book.turn({
+      width: 600,
       height: 600,
-      size: "stretch",     // يمدد حسب مساحة الحاوية
-      minWidth: 315,
-      maxWidth: 1200,
-      minHeight: 315,
-      maxHeight: 1200,
-      showCover: true,     // مهم: الغلاف لوحده
-      mobileScrollSupport: true,
-      useMouseEvents: true,
-      swipeDistance: 30,
-      flippingTime: 700,
-      disableFlipByClick: false,
-      maxShadowOpacity: 0.35
+      autoCenter: true,
+      display: "double",    // صفحتين معًا (بعد الغلاف)
+      direction: "rtl",     // RTL
+      gradients: true
     });
 
-    // تحميل الصفحات كصور
-    pageFlip.loadFromImages(pages);
+    // نبدأ على الغلاف (الصفحة 2 لأن الصفحة 1 وهمية)
+    $book.turn("page", 2);
 
-    // أزرار التالي/السابق (اختياري لكن مفيد)
-    document.getElementById('next').addEventListener('click', () => pageFlip.flipNext());
-    document.getElementById('prev').addEventListener('click', () => pageFlip.flipPrev());
+    // أحيانًا الكاش/التخطيط يلخبط: نثبتها بعد لحظة
+    setTimeout(function(){
+      try {
+        $book.turn("direction", "rtl");
+        $book.turn("page", 2);
+      } catch(e){}
+    }, 300);
+  });
+</script>
 
-    // اتجاه RTL: عمليًا “التجربة” هي الأهم لأن بعض المكتبات تتعامل مع الاتجاه عبر CSS.
-    // إذا حسّيتي الاتجاه معكوس، قولي لي وسأعطيك نسخة RTL معكوسة (سطر واحد).
-  </script>
 </body>
 </html>
