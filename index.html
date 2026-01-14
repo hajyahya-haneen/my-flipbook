@@ -3,101 +3,120 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Flipbook</title>
+  <title>Flipbook RTL</title>
+
+  <!-- لازم يكونوا موجودين بنفس المجلد -->
+  <script src="jquery.min.js"></script>
+  <script src="turn.min.js"></script>
 
   <style>
+    /* صفحة كاملة في المنتصف */
     body{
       margin:0;
-      background:#f2f2f2;
-      font-family: Arial, sans-serif;
+      min-height:100vh;
       display:flex;
-      flex-direction:column;
       align-items:center;
       justify-content:center;
-      min-height:100vh;
-      gap:12px;
+      background:#f2f2f2;
+      font-family: Arial, sans-serif;
     }
-    #book-wrap{
-      width:min(1200px, 95vw);
-      aspect-ratio: 2 / 1; /* كتاب مفتوح: صفحتين جنب بعض */
-      background:transparent;
-    }
+
+    /* حجم الكتاب النهائي = 600x600 (مربع) */
     #book{
+      width:600px;
+      height:600px;
+    }
+
+    /* كل صفحة بنفس حجم الكتاب */
+    .page{
+      width:600px;
+      height:600px;
+      background:#fff;
+      overflow:hidden;
+      position:relative;
+    }
+
+    .page img{
       width:100%;
       height:100%;
+      object-fit:contain; /* لو بدك قصّ بدل احتواء: غيّريها cover */
+      display:block;
+      background:#fff;
     }
-    .hint{
-      color:#333;
-      font-size:14px;
-    }
-    .btns{
-      display:flex;
-      gap:8px;
-    }
-    button{
-      padding:10px 14px;
-      border:0;
-      border-radius:10px;
-      cursor:pointer;
-      box-shadow:0 6px 18px rgba(0,0,0,.12);
+
+    /* تحسين بسيط للموبايل: يصغر تلقائيًا */
+    @media (max-width: 650px){
+      #book, .page{
+        width: 92vw;
+        height: 92vw;
+      }
     }
   </style>
 </head>
 
 <body>
-  <div id="book-wrap">
-    <div id="book"></div>
-  </div>
 
-  <div class="btns">
-    <button id="prev">السابق</button>
-    <button id="next">التالي</button>
-  </div>
-  <div class="hint">يمكنك أيضًا التقليب بالسحب/النقر على أطراف الصفحة.</div>
-
-  <!-- مكتبة تقليب صفحات (واقعية) عبر CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.min.js"></script>
+  <div id="book"></div>
 
   <script>
-    // عدلي الرقم إذا PDF عندك أكثر/أقل من 25
+    // =========================
+    // إعداداتك
+    // =========================
     const TOTAL_PAGES = 25;
 
-    // أنشئ قائمة صور الصفحات
-    const pages = [];
-    for (let i = 1; i <= TOTAL_PAGES; i++){
-      const n = String(i).padStart(2,'0');
-      pages.push(`pages/page${n}.jpg`);
+    // إذا صورك داخل مجلد pages فقط، خليها: "pages/"
+    // وإذا صورك بجانب index.html (الروت) خليها: ""
+    const IMG_PATH = "";
+
+    // حجم المربع (لا تغيّريه إذا بدك 600x600)
+    const BOOK_SIZE = 600;
+
+    // =========================
+    // إنشاء الصفحات داخل #book
+    // =========================
+    function pad2(n){ return String(n).padStart(2,'0'); }
+
+    const bookEl = document.getElementById("book");
+
+    for(let i=1; i<=TOTAL_PAGES; i++){
+      const page = document.createElement("div");
+      page.className = "page";
+
+      const img = document.createElement("img");
+      img.alt = "Page " + i;
+      img.src = IMG_PATH + "page" + pad2(i) + ".jpg";
+
+      page.appendChild(img);
+      bookEl.appendChild(page);
     }
 
-    const bookEl = document.getElementById('book');
+    // =========================
+    // تشغيل Turn.js
+    // =========================
+    $(function(){
+      // ملاحظة:
+      // display:'double' = صفحتين مقابل بعض
+      // لكن الغلاف (page01) سيظهر لوحده تلقائيًا كصفحة أولى.
+      $("#book").turn({
+        width: BOOK_SIZE,
+        height: BOOK_SIZE,
+        autoCenter: true,
+        display: "double",
+        direction: "rtl",
+        gradients: true,
+        elevation: 50,
+        when: {
+          turning: function(e, page){
+            // تأكيد أن البداية من اليمين: أول فتح يكون على الغلاف
+            // لا شيء إضافي هنا، فقط جاهز للتوسعة لو حبيتي.
+          }
+        }
+      });
 
-    // إعدادات “واقعية”
-    const pageFlip = new St.PageFlip(bookEl, {
-      width: 600,          // مقاس الصفحة الواحدة (داخل العرض)
-      height: 600,
-      size: "stretch",     // يمدد حسب مساحة الحاوية
-      minWidth: 315,
-      maxWidth: 1200,
-      minHeight: 315,
-      maxHeight: 1200,
-      showCover: true,     // مهم: الغلاف لوحده
-      mobileScrollSupport: true,
-      useMouseEvents: true,
-      swipeDistance: 30,
-      flippingTime: 700,
-      disableFlipByClick: false,
-      maxShadowOpacity: 0.35
+      // لو فتح أول مرة مش على الغلاف بسبب الكاش/التحديث:
+      $("#book").turn("page", 1);
     });
-
-    // تحميل الصفحات كصور
-    pageFlip.loadFromImages(pages);
-
-    // أزرار التالي/السابق (اختياري لكن مفيد)
-    document.getElementById('next').addEventListener('click', () => pageFlip.flipNext());
-    document.getElementById('prev').addEventListener('click', () => pageFlip.flipPrev());
-
-    // اتجاه RTL: عمليًا “التجربة” هي الأهم لأن بعض المكتبات تتعامل مع الاتجاه عبر CSS.
-    // إذا حسّيتي الاتجاه معكوس، قولي لي وسأعطيك نسخة RTL معكوسة (سطر واحد).
   </script>
+
 </body>
 </html>
